@@ -3,24 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\homepage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\homepage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\controller\\borrowservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:controller\\borrowservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\model\\borrowresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:model\\borrowresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\controller\\homeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:controller\\homeservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\browsebookpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\browsebookpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\borrowinghistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\borrowinghistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\homepage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\homepage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|c:\\users\\admin\\desktop\\studentlibrary\\view\\browsebookpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{33D655C6-8403-435F-8F0F-0E22AE50F202}|StudentLibrary.csproj|solutionrelative:view\\browsebookpage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,70 +29,60 @@
           "SelectedChildIndex": 1,
           "Children": [
             {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "BrowseBookPage.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BrowseBookPage.cs",
+              "RelativeDocumentMoniker": "view\\BrowseBookPage.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BrowseBookPage.cs",
+              "RelativeToolTip": "view\\BrowseBookPage.cs",
+              "ViewState": "AgIAAKMBAAAAAAAAAAAwwMUBAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-17T01:19:19.234Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "BorrowService.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\controller\\BorrowService.cs",
+              "RelativeDocumentMoniker": "controller\\BorrowService.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\controller\\BorrowService.cs",
+              "RelativeToolTip": "controller\\BorrowService.cs",
+              "ViewState": "AgIAAFwAAAAAAAAAAAAWwLcAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-17T01:52:03.401Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "BorrowResponse.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\model\\BorrowResponse.cs",
+              "RelativeDocumentMoniker": "model\\BorrowResponse.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\model\\BorrowResponse.cs",
+              "RelativeToolTip": "model\\BorrowResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-17T01:51:57.525Z",
+              "EditorCaption": ""
+            },
+            {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "HomePage.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\HomePage.cs",
-              "RelativeDocumentMoniker": "view\\HomePage.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\HomePage.cs [Design]",
-              "RelativeToolTip": "view\\HomePage.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-01T23:54:22.666Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Login.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\Login.cs",
-              "RelativeDocumentMoniker": "view\\Login.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\Login.cs [Design]",
-              "RelativeToolTip": "view\\Login.cs [Design]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-01T23:54:21.732Z",
-              "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "HomeService.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\controller\\HomeService.cs",
-              "RelativeDocumentMoniker": "controller\\HomeService.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\controller\\HomeService.cs",
-              "RelativeToolTip": "controller\\HomeService.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAcwDAAAABXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-01T23:43:17.68Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "BorrowingHistory.cs [Design]",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BorrowingHistory.cs",
-              "RelativeDocumentMoniker": "view\\BorrowingHistory.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BorrowingHistory.cs [Design]",
-              "RelativeToolTip": "view\\BorrowingHistory.cs [Design]",
+              "Title": "BrowseBookPage.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BrowseBookPage.cs",
+              "RelativeDocumentMoniker": "view\\BrowseBookPage.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\BrowseBookPage.cs [Design]",
+              "RelativeToolTip": "view\\BrowseBookPage.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-01T18:25:10.04Z",
+              "WhenOpened": "2026-02-17T01:19:16.34Z",
               "EditorCaption": " [Design]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "HomePage.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\HomePage.cs",
-              "RelativeDocumentMoniker": "view\\HomePage.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\StudentLibrary\\view\\HomePage.cs",
-              "RelativeToolTip": "view\\HomePage.cs",
-              "ViewState": "AgIAAHgAAAAAAAAAAAAcwIQAAAA+AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-02-01T16:44:28.719Z",
-              "EditorCaption": ""
             }
           ]
         }

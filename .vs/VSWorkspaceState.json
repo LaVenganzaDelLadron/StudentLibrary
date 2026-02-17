@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
+    "\\controller",
     "\\view"
   ],
-  "SelectedNode": "\\view\\HomePage.Designer.cs",
+  "SelectedNode": "\\controller\\HomeService.cs",
   "PreviewInSolutionExplorer": false
 }

@@ -13,6 +13,7 @@ namespace StudentLibrary.controller
 {
     internal class BorrowService
     {
+        public const int MaxBorrowLimit = 2;
         private Core core;
         private static readonly string borrowFilePath = "borrow.json";
         public event EventHandler<List<Borrow>> OnBorrowsUpdated;
@@ -344,6 +345,119 @@ namespace StudentLibrary.controller
             }
         }
 
+        public BorrowLimitResult CheckBorrowEligibility(string studentName)
+        {
+            if (string.IsNullOrWhiteSpace(studentName))
+            {
+                return new BorrowLimitResult
+                {
+                    CanBorrow = false,
+                    Message = "Student name is required to borrow a book."
+                };
+            }
+
+            try
+            {
+                var borrows = GetBorrows();
+                int activeBorrowCount = CountActiveBorrows(studentName, borrows);
+                int todayBorrowCount = CountBorrowRequestsToday(studentName, borrows);
+
+                if (activeBorrowCount >= MaxBorrowLimit)
+                {
+                    return new BorrowLimitResult
+                    {
+                        CanBorrow = false,
+                        ActiveBorrowCount = activeBorrowCount,
+                        TodayBorrowCount = todayBorrowCount,
+                        Message = $"Borrow limit reached. You can only borrow {MaxBorrowLimit} books at a time. Please return a book to the librarian first."
+                    };
+                }
+
+                if (todayBorrowCount >= MaxBorrowLimit)
+                {
+                    return new BorrowLimitResult
+                    {
+                        CanBorrow = false,
+                        ActiveBorrowCount = activeBorrowCount,
+                        TodayBorrowCount = todayBorrowCount,
+                        Message = $"Daily borrow limit reached. You can only request {MaxBorrowLimit} books per day."
+                    };
+                }
+
+                return new BorrowLimitResult
+                {
+                    CanBorrow = true,
+                    ActiveBorrowCount = activeBorrowCount,
+                    TodayBorrowCount = todayBorrowCount
+                };
+            }
+            catch
+            {
+                return new BorrowLimitResult
+                {
+                    CanBorrow = false,
+                    Message = "Unable to validate your borrowing limit right now. Please try again."
+                };
+            }
+        }
+
+        public int CountActiveBorrows(string studentName, List<Borrow> borrows = null)
+        {
+            if (string.IsNullOrWhiteSpace(studentName))
+            {
+                return 0;
+            }
+
+            var borrowList = borrows ?? GetBorrows();
+
+            return borrowList.Count(b =>
+                IsSameStudent(b, studentName) &&
+                IsBorrowActive(b));
+        }
+
+        public int CountBorrowRequestsToday(string studentName, List<Borrow> borrows = null)
+        {
+            if (string.IsNullOrWhiteSpace(studentName))
+            {
+                return 0;
+            }
+
+            DateTime today = DateTime.Today;
+            var borrowList = borrows ?? GetBorrows();
+
+            return borrowList.Count(b =>
+                IsSameStudent(b, studentName) &&
+                b.RequestDate.Date == today);
+        }
+
+        public bool IsBorrowActive(Borrow borrow)
+        {
+            if (borrow == null)
+            {
+                return false;
+            }
+
+            if (borrow.ReceivedByLibrarian)
+            {
+                return false;
+            }
+
+            return borrow.Status != enumerator.BorrowStatus.Returned;
+        }
+
+        private bool IsSameStudent(Borrow borrow, string studentName)
+        {
+            if (borrow == null)
+            {
+                return false;
+            }
+
+            return string.Equals(
+                borrow.StudentName?.Trim(),
+                studentName.Trim(),
+                StringComparison.OrdinalIgnoreCase);
+        }
+
         // Business logic methods moved from BorrowingHistory view
 
         public string GetDisplayStatus(Borrow borrow)
@@ -526,6 +640,14 @@ namespace StudentLibrary.controller
         public int TotalBorrowed { get; set; }
         public decimal TotalPenalty { get; set; }
         public int OverdueCount { get; set; }
+    }
+
+    public class BorrowLimitResult
+    {
+        public bool CanBorrow { get; set; }
+        public int ActiveBorrowCount { get; set; }
+        public int TodayBorrowCount { get; set; }
+        public string Message { get; set; }
     }
 }
 

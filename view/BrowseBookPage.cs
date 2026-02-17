@@ -23,6 +23,8 @@ namespace StudentLibrary.view
         private string _studentName;
         private string _studentFullName;
         private Dashboard _dashboard;
+        private BorrowLimitResult _borrowLimitStatus;
+        private Label lblBorrowLimitInfo;
 
         public BrowseBookPage(string userId = "", string username = "", string fullName = "", Dashboard dashboard = null)
         {
@@ -40,7 +42,48 @@ namespace StudentLibrary.view
             bookServices.OnBooksUpdated += BookServices_OnBooksUpdated;
             LoadBooks();
             LoadCategories();
+            InitializeResponsiveLayout();
             bookServices.StartListeningForUpdates();
+        }
+
+        private void InitializeResponsiveLayout()
+        {
+            lblBorrowLimitInfo = new Label
+            {
+                Name = "lblBorrowLimitInfo",
+                AutoSize = false,
+                Height = 22,
+                Font = new Font("Microsoft Sans Serif", 8.5F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(0, 128, 0),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            Controls.Add(lblBorrowLimitInfo);
+
+            textBoxSearch.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            flowLayoutPanel1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            dgvBooks.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            lblBorrowLimitInfo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+
+            ArrangeLayout();
+            Resize += (s, e) => ArrangeLayout();
+        }
+
+        private void ArrangeLayout()
+        {
+            int margin = 10;
+            int gap = 10;
+
+            flowLayoutPanel1.Location = new Point(ClientSize.Width - flowLayoutPanel1.Width - margin, margin);
+
+            int searchWidth = Math.Max(280, flowLayoutPanel1.Left - margin - gap);
+            textBoxSearch.Location = new Point(margin, margin);
+            textBoxSearch.Size = new Size(searchWidth, 35);
+
+            lblBorrowLimitInfo.Location = new Point(margin, textBoxSearch.Bottom + 5);
+            lblBorrowLimitInfo.Size = new Size(ClientSize.Width - (margin * 2), 22);
+
+            dgvBooks.Location = new Point(margin, lblBorrowLimitInfo.Bottom + 6);
+            dgvBooks.Size = new Size(ClientSize.Width - (margin * 2), ClientSize.Height - dgvBooks.Top - margin);
         }
 
         private void ResolveStudentFullName()
@@ -135,10 +178,29 @@ namespace StudentLibrary.view
 
             string studentNameToCheck = !string.IsNullOrWhiteSpace(_studentFullName) ? _studentFullName : _studentName;
             HashSet<string> pendingBookTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _borrowLimitStatus = null;
 
             if (!string.IsNullOrWhiteSpace(studentNameToCheck))
             {
                 var borrows = borrowService.GetBorrows();
+                int activeBorrowCount = borrowService.CountActiveBorrows(studentNameToCheck, borrows);
+                int todayBorrowCount = borrowService.CountBorrowRequestsToday(studentNameToCheck, borrows);
+                bool reachedActiveLimit = activeBorrowCount >= BorrowService.MaxBorrowLimit;
+                bool reachedDailyLimit = todayBorrowCount >= BorrowService.MaxBorrowLimit;
+                string limitMessage = reachedActiveLimit
+                    ? $"Borrow limit reached ({BorrowService.MaxBorrowLimit} active books). Return a book to the librarian first."
+                    : (reachedDailyLimit
+                        ? $"Daily limit reached ({BorrowService.MaxBorrowLimit} requests today). Try again tomorrow."
+                        : string.Empty);
+
+                _borrowLimitStatus = new BorrowLimitResult
+                {
+                    CanBorrow = !reachedActiveLimit && !reachedDailyLimit,
+                    ActiveBorrowCount = activeBorrowCount,
+                    TodayBorrowCount = todayBorrowCount,
+                    Message = limitMessage
+                };
+
                 foreach (var borrow in borrows)
                 {
                     if (borrow == null)
@@ -173,6 +235,39 @@ namespace StudentLibrary.view
             {
                 dgvBooks.Rows.Add("No books found", "", "", "", "", "");
             }
+
+            UpdateBorrowLimitInfo(studentNameToCheck);
+        }
+
+        private void UpdateBorrowLimitInfo(string studentNameToCheck)
+        {
+            if (lblBorrowLimitInfo == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(studentNameToCheck))
+            {
+                lblBorrowLimitInfo.Text = string.Empty;
+                return;
+            }
+
+            if (_borrowLimitStatus == null)
+            {
+                lblBorrowLimitInfo.Text = "Borrowing status unavailable.";
+                lblBorrowLimitInfo.ForeColor = Color.FromArgb(220, 20, 60);
+                return;
+            }
+
+            if (_borrowLimitStatus.CanBorrow)
+            {
+                lblBorrowLimitInfo.Text = $"Limit: {BorrowService.MaxBorrowLimit} books. Active: {_borrowLimitStatus.ActiveBorrowCount}/{BorrowService.MaxBorrowLimit} | Today: {_borrowLimitStatus.TodayBorrowCount}/{BorrowService.MaxBorrowLimit}";
+                lblBorrowLimitInfo.ForeColor = Color.FromArgb(0, 128, 0);
+                return;
+            }
+
+            lblBorrowLimitInfo.Text = _borrowLimitStatus.Message;
+            lblBorrowLimitInfo.ForeColor = Color.FromArgb(220, 20, 60);
         }
 
         private void dgvBooks_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -198,6 +293,10 @@ namespace StudentLibrary.view
                 // Get book status to enable/disable Request Book option
                 string status = row.Cells[4].Value?.ToString() ?? "";
                 bool canRequest = status == "Available";
+                if (_borrowLimitStatus != null && !_borrowLimitStatus.CanBorrow)
+                {
+                    canRequest = false;
+                }
                 
                 // Store the selected book title for the context menu handlers
                 menuItemViewInfo.Tag = bookTitle;
@@ -214,6 +313,14 @@ namespace StudentLibrary.view
                     else if (status == "Out of Stock")
                     {
                         menuItemRequestBook.Text = "Request Book (Out of Stock)";
+                    }
+                    else if (_borrowLimitStatus != null && !_borrowLimitStatus.CanBorrow)
+                    {
+                        menuItemRequestBook.Text = "Request Book (Borrow Limit Reached)";
+                    }
+                    else
+                    {
+                        menuItemRequestBook.Text = "Request Book (Unavailable)";
                     }
                 }
                 else
@@ -315,6 +422,18 @@ namespace StudentLibrary.view
             try
             {
                 string studentNameToSend = !string.IsNullOrWhiteSpace(_studentFullName) ? _studentFullName : _studentName;
+                var eligibility = borrowService.CheckBorrowEligibility(studentNameToSend);
+                if (!eligibility.CanBorrow)
+                {
+                    MessageBox.Show(
+                        eligibility.Message,
+                        "Borrow Limit",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    LoadBooks(textBoxSearch.Text);
+                    return;
+                }
+
                 AuthResponse response = borrowService.RequestBorrow(studentNameToSend, bookTitle);
                 
                 if (response.Status == "SUCCESS")
