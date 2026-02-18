@@ -14,6 +14,7 @@ namespace StudentLibrary.controller
     internal class BorrowService
     {
         public const int MaxBorrowLimit = 2;
+        public const int BorrowDurationDays = 1;
         private Core core;
         private static readonly string borrowFilePath = "borrow.json";
         public event EventHandler<List<Borrow>> OnBorrowsUpdated;
@@ -486,10 +487,16 @@ namespace StudentLibrary.controller
             // Borrowed or Overdue
             if (borrow.Status == enumerator.BorrowStatus.Borrowed)
             {
-                DateTime dueDate = borrow.RequestDate.AddDays(1);
+                DateTime? dueDate = GetDueDate(borrow);
+                if (!dueDate.HasValue)
+                {
+                    Console.WriteLine("  -> Returning 'Borrowed' (ApprovedDate missing)");
+                    return "Borrowed";
+                }
+
                 Console.WriteLine($"  -> Status is Borrowed, DueDate: {dueDate}, Now: {DateTime.Now}");
                 
-                if (DateTime.Now > dueDate)
+                if (DateTime.Now > dueDate.Value)
                 {
                     Console.WriteLine($"  -> Returning 'Overdue'");
                     return "Overdue";
@@ -502,8 +509,8 @@ namespace StudentLibrary.controller
             // Pending request
             if (borrow.Status == enumerator.BorrowStatus.Pending)
             {
-                Console.WriteLine($"  -> Returning 'Pending'");
-                return "Pending";
+                Console.WriteLine($"  -> Returning 'Pending Approval'");
+                return "Pending Approval";
             }
 
             // Lost
@@ -523,6 +530,29 @@ namespace StudentLibrary.controller
             // Safety fallback
             Console.WriteLine($"  -> Warning: Unexpected status, returning '{borrow.Status}'");
             return borrow.Status.ToString();
+        }
+
+        public bool IsPendingApprovalRequest(Borrow borrow)
+        {
+            if (borrow == null || borrow.ReceivedByLibrarian)
+            {
+                return false;
+            }
+
+            return borrow.Status == enumerator.BorrowStatus.Pending ||
+                   borrow.Status == enumerator.BorrowStatus.Reserved;
+        }
+
+        public bool IsApprovedActiveRequest(Borrow borrow)
+        {
+            if (borrow == null || borrow.ReceivedByLibrarian)
+            {
+                return false;
+            }
+
+            return borrow.Status == enumerator.BorrowStatus.Borrowed ||
+                   borrow.Status == enumerator.BorrowStatus.Overdue ||
+                   borrow.Status == enumerator.BorrowStatus.Returning;
         }
 
         public List<Borrow> ApplyFilters(List<Borrow> borrows, string currentFilter, string searchText)
@@ -553,12 +583,12 @@ namespace StudentLibrary.controller
 
             foreach (var borrow in borrows)
             {
-                DateTime dueDate = borrow.RequestDate.AddDays(1);
+                DateTime? dueDate = GetDueDate(borrow);
                 if (borrow.Status != enumerator.BorrowStatus.Returned && borrow.Status != enumerator.BorrowStatus.Pending)
                 {
-                    if (DateTime.Now > dueDate)
+                    if (dueDate.HasValue && DateTime.Now > dueDate.Value)
                     {
-                        TimeSpan overduePeriod = DateTime.Now - dueDate;
+                        TimeSpan overduePeriod = DateTime.Now - dueDate.Value;
                         long hoursOverdue = (long)Math.Ceiling(overduePeriod.TotalHours);
                         totalPenalty += hoursOverdue * 3;
                     }
@@ -576,16 +606,16 @@ namespace StudentLibrary.controller
         public decimal CalculatePenalty(Borrow borrow)
         {
             decimal penalty = 0;
-            DateTime dueDate = borrow.RequestDate.AddDays(1);
+            DateTime? dueDate = GetDueDate(borrow);
 
             // Only calculate penalty for active borrows (not Pending, Returning, or Returned)
             if (borrow.Status != enumerator.BorrowStatus.Returned && 
                 borrow.Status != enumerator.BorrowStatus.Returning &&
                 borrow.Status != enumerator.BorrowStatus.Pending)
             {
-                if (DateTime.Now > dueDate)
+                if (dueDate.HasValue && DateTime.Now > dueDate.Value)
                 {
-                    TimeSpan overduePeriod = DateTime.Now - dueDate;
+                    TimeSpan overduePeriod = DateTime.Now - dueDate.Value;
                     long hoursOverdue = (long)Math.Ceiling(overduePeriod.TotalHours);
                     penalty = hoursOverdue * 3; // ₱3 per hour
                 }
@@ -631,6 +661,16 @@ namespace StudentLibrary.controller
             }
 
             return "Unknown";
+        }
+
+        public DateTime? GetDueDate(Borrow borrow)
+        {
+            if (borrow == null || !borrow.ApprovedDate.HasValue)
+            {
+                return null;
+            }
+
+            return borrow.ApprovedDate.Value.AddDays(BorrowDurationDays);
         }
     }
 

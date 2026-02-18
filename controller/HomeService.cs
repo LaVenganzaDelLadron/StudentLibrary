@@ -83,9 +83,11 @@ namespace StudentLibrary.controller
                 {
                     var status = borrowService.GetDisplayStatus(b);
                     if (status != "Borrowed") return false;
-                    
-                    DateTime dueDate = b.RequestDate.AddDays(1);
-                    return DateTime.Now < dueDate && dueDate <= tenHoursFromNow;
+
+                    DateTime? dueDate = borrowService.GetDueDate(b);
+                    if (!dueDate.HasValue) return false;
+
+                    return DateTime.Now < dueDate.Value && dueDate.Value <= tenHoursFromNow;
                 }).ToList();
                 
                 stats.DueSoon = dueSoonBooks.Count();
@@ -93,18 +95,23 @@ namespace StudentLibrary.controller
                 // Calculate remaining time for the book due soonest
                 if (dueSoonBooks.Count > 0)
                 {
-                    var soonestBook = dueSoonBooks.OrderBy(b => b.RequestDate.AddDays(1)).FirstOrDefault();
+                    var soonestBook = dueSoonBooks
+                        .OrderBy(b => borrowService.GetDueDate(b) ?? DateTime.MaxValue)
+                        .FirstOrDefault();
                     if (soonestBook != null)
                     {
-                        DateTime dueDate = soonestBook.RequestDate.AddDays(1);
-                        TimeSpan remaining = dueDate - DateTime.Now;
-                        if (remaining.TotalHours > 0)
+                        DateTime? dueDate = borrowService.GetDueDate(soonestBook);
+                        if (dueDate.HasValue)
                         {
-                            stats.RemainingTimeDisplay = $"Remaining {remaining.Hours:D2}:{remaining.Minutes:D2}";
-                        }
-                        else
-                        {
-                            stats.RemainingTimeDisplay = "Time expired!";
+                            TimeSpan remaining = dueDate.Value - DateTime.Now;
+                            if (remaining.TotalHours > 0)
+                            {
+                                stats.RemainingTimeDisplay = $"Remaining {remaining.Hours:D2}:{remaining.Minutes:D2}";
+                            }
+                            else
+                            {
+                                stats.RemainingTimeDisplay = "Time expired!";
+                            }
                         }
                     }
                 }
@@ -206,7 +213,7 @@ namespace StudentLibrary.controller
                     return borrow.ReturnDate;
 
                 case "Overdue":
-                    return borrow.RequestDate.AddDays(1); // due date
+                    return borrowService.GetDueDate(borrow) ?? borrow.RequestDate;
 
                 default: // Borrowed, Pending
                     return borrow.RequestDate;
@@ -217,14 +224,18 @@ namespace StudentLibrary.controller
         {
             switch (status)
             {
-                case "Pending":
+                case "Pending Approval":
                     return $"Requested on {borrow.RequestDate:MMM dd}";
                 case "Borrowed":
-                    DateTime dueDate = borrow.RequestDate.AddDays(1);
-                    return $"Due {dueDate:MMM dd}";
+                    DateTime? dueDate = borrowService.GetDueDate(borrow);
+                    return dueDate.HasValue ? $"Due {dueDate.Value:MMM dd}" : "Due date pending";
                 case "Overdue":
-                    DateTime overdueSince = borrow.RequestDate.AddDays(1);
-                    TimeSpan overduePeriod = DateTime.Now - overdueSince;
+                    DateTime? overdueSince = borrowService.GetDueDate(borrow);
+                    if (!overdueSince.HasValue)
+                    {
+                        return "Overdue";
+                    }
+                    TimeSpan overduePeriod = DateTime.Now - overdueSince.Value;
                     int daysOverdue = (int)Math.Ceiling(overduePeriod.TotalDays);
                     return $"Overdue by {daysOverdue} day(s)";
                 case "Returning":

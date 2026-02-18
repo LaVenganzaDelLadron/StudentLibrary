@@ -69,7 +69,7 @@ namespace StudentLibrary.view
                 foreach (var borrow in filteredBorrows)
                 {
                     // Calculate due date
-                    DateTime dueDate = borrow.RequestDate.AddDays(1);
+                    DateTime? dueDate = borrowService.GetDueDate(borrow);
 
                     // Determine status display
                     string statusDisplay = borrowService.GetDisplayStatus(borrow);
@@ -83,7 +83,7 @@ namespace StudentLibrary.view
                         borrow.BookRequested,
                         authorName,
                         borrow.RequestDate.ToString("MM/dd/yyyy"),
-                        dueDate.ToString("MM/dd/yyyy"),
+                        dueDate.HasValue ? dueDate.Value.ToString("MM/dd/yyyy") : "-",
                         statusDisplay,
                         penalty > 0 ? $"₱{penalty:F2}" : "₱0.00",
                         "Return & Pay"
@@ -112,7 +112,7 @@ namespace StudentLibrary.view
             
             switch (status)
             {
-                case "Pending":
+                case "Pending Approval":
                     statusCell.Style.BackColor = Color.FromArgb(255, 193, 7); // Orange
                     statusCell.Style.ForeColor = Color.Black;
                     break;
@@ -143,8 +143,8 @@ namespace StudentLibrary.view
         {
             var actionCell = dataGridViewBorrowingHistory.Rows[rowIndex].Cells["Action"];
 
-            // Hide button for Pending, Returning, and Returned statuses
-            if (statusDisplay == "Pending" || statusDisplay == "Returning" || statusDisplay == "Returned")
+            // Hide button for Pending Approval, Returning, and Returned statuses
+            if (statusDisplay == "Pending Approval" || statusDisplay == "Returning" || statusDisplay == "Returned")
             {
                 actionCell.Value = "";
                 actionCell.ReadOnly = true;
@@ -153,8 +153,7 @@ namespace StudentLibrary.view
 
             // Show Return button for Borrowed and Overdue
             // Check if book is overdue to show appropriate button text
-            DateTime dueDate = borrow.RequestDate.AddDays(1);
-            bool isOverdue = DateTime.Now > dueDate;
+            bool isOverdue = statusDisplay == "Overdue";
             
             actionCell.Value = isOverdue ? "Return & Pay" : "Return";
             actionCell.ReadOnly = false;
@@ -171,7 +170,7 @@ namespace StudentLibrary.view
             if (e.ColumnIndex == dataGridViewBorrowingHistory.Columns["Action"].Index)
             {
                 string status = dataGridViewBorrowingHistory.Rows[e.RowIndex].Cells["Status"].Value?.ToString();
-                if (string.IsNullOrWhiteSpace(status) || status == "Pending" || status == "Returning" || status == "Returned")
+                if (string.IsNullOrWhiteSpace(status) || status == "Pending Approval" || status == "Returning" || status == "Returned")
                 {
                     MessageBox.Show("This action is not available for the selected record.", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;

@@ -372,10 +372,15 @@ namespace StudentLibrary.view
 
                 foreach (var borrow in approvedBorrows)
                 {
-                    DateTime dueDate = borrow.RequestDate.AddDays(1); // 24 hours validity
-                    TimeSpan timeRemaining = dueDate - DateTime.Now;
+                    DateTime? dueDate = borrowService.GetDueDate(borrow);
+                    if (!dueDate.HasValue)
+                    {
+                        continue;
+                    }
 
-                    string message = $"Your request for '{borrow.BookRequested}' has been approved! Due: {dueDate:yyyy-MM-dd HH:mm}";
+                    TimeSpan timeRemaining = dueDate.Value - DateTime.Now;
+
+                    string message = $"Your request for '{borrow.BookRequested}' has been approved! Due: {dueDate.Value:yyyy-MM-dd HH:mm}";
                     string status = timeRemaining.TotalHours > 0 ?
                         $"{(int)timeRemaining.TotalHours}h {timeRemaining.Minutes}m left" :
                         "Overdue";
@@ -442,13 +447,18 @@ namespace StudentLibrary.view
 
                 foreach (var borrow in myBorrows)
                 {
-                    DateTime dueDate = borrow.RequestDate.AddDays(1); // 24 hours validity
-                    TimeSpan timeRemaining = dueDate - DateTime.Now;
+                    DateTime? dueDate = borrowService.GetDueDate(borrow);
+                    if (!dueDate.HasValue)
+                    {
+                        continue;
+                    }
+
+                    TimeSpan timeRemaining = dueDate.Value - DateTime.Now;
 
                     // Check if almost due (less than 2 hours remaining)
                     if (timeRemaining.TotalHours > 0 && timeRemaining.TotalHours <= 2)
                     {
-                        string message = $"⚠️ URGENT: '{borrow.BookRequested}' is due soon! Return before {dueDate:HH:mm} to avoid fines";
+                        string message = $"⚠️ URGENT: '{borrow.BookRequested}' is due soon! Return before {dueDate.Value:HH:mm} to avoid fines";
                         dgvNotifications.Rows.Add(
                             "Due Soon",
                             message,
@@ -463,11 +473,11 @@ namespace StudentLibrary.view
                         int hoursOverdue = (int)Math.Abs(timeRemaining.TotalHours);
                         decimal fine = hoursOverdue * 3; // ₱3 per hour
 
-                        string message = $"❌ OVERDUE: '{borrow.BookRequested}' was due at {dueDate:yyyy-MM-dd HH:mm}. Please return immediately!";
+                        string message = $"❌ OVERDUE: '{borrow.BookRequested}' was due at {dueDate.Value:yyyy-MM-dd HH:mm}. Please return immediately!";
                         dgvNotifications.Rows.Add(
                             "Overdue",
                             message,
-                            dueDate.ToString("yyyy-MM-dd HH:mm"),
+                            dueDate.Value.ToString("yyyy-MM-dd HH:mm"),
                             $"₱{fine} ({hoursOverdue}h)"
                         );
                         dgvNotifications.Rows[dgvNotifications.Rows.Count - 1].DefaultCellStyle.BackColor = Color.Red;

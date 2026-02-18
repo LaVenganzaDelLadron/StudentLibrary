@@ -177,12 +177,13 @@ namespace StudentLibrary.view
             }
 
             string studentNameToCheck = !string.IsNullOrWhiteSpace(_studentFullName) ? _studentFullName : _studentName;
-            HashSet<string> pendingBookTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> reservedBookTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> borrowedBookTitles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _borrowLimitStatus = null;
+            var borrows = borrowService.GetBorrows();
 
             if (!string.IsNullOrWhiteSpace(studentNameToCheck))
             {
-                var borrows = borrowService.GetBorrows();
                 int activeBorrowCount = borrowService.CountActiveBorrows(studentNameToCheck, borrows);
                 int todayBorrowCount = borrowService.CountBorrowRequestsToday(studentNameToCheck, borrows);
                 bool reachedActiveLimit = activeBorrowCount >= BorrowService.MaxBorrowLimit;
@@ -207,21 +208,32 @@ namespace StudentLibrary.view
                     {
                         continue;
                     }
+                }
+            }
 
-                    if (string.Equals(borrow.StudentName?.Trim(), studentNameToCheck, StringComparison.OrdinalIgnoreCase) &&
-                        borrow.Status == BorrowStatus.Pending)
-                    {
-                        pendingBookTitles.Add(borrow.BookRequested ?? string.Empty);
-                    }
+            foreach (var borrow in borrows)
+            {
+                if (borrow == null || string.IsNullOrWhiteSpace(borrow.BookRequested))
+                {
+                    continue;
+                }
+
+                if (borrowService.IsPendingApprovalRequest(borrow))
+                {
+                    reservedBookTitles.Add(borrow.BookRequested);
+                }
+                else if (borrowService.IsApprovedActiveRequest(borrow))
+                {
+                    borrowedBookTitles.Add(borrow.BookRequested);
                 }
             }
 
             foreach (var book in filteredBooks)
             {
-                string status = pendingBookTitles.Contains(book.Title ?? string.Empty) ? "Pending" : (book.Copies > 0 ? "Available" : "Out of Stock");
-                string actions = status == "Pending" ? "..." : "⋮";
+                string status = GetBookAvailabilityStatus(book, reservedBookTitles, borrowedBookTitles);
+                string actions = "⋮";
                 
-                dgvBooks.Rows.Add(
+                int rowIndex = dgvBooks.Rows.Add(
                     book.Title,
                     book.Author,
                     book.Category,
@@ -229,6 +241,11 @@ namespace StudentLibrary.view
                     status,
                     actions
                 );
+
+                if (status == "Reserved")
+                {
+                    dgvBooks.Rows[rowIndex].Cells[4].ToolTipText = "Waiting for librarian approval.";
+                }
             }
 
             if (filteredBooks.Count == 0)
@@ -237,6 +254,30 @@ namespace StudentLibrary.view
             }
 
             UpdateBorrowLimitInfo(studentNameToCheck);
+        }
+
+        private string GetBookAvailabilityStatus(Books book, HashSet<string> reservedBookTitles, HashSet<string> borrowedBookTitles)
+        {
+            string title = book?.Title ?? string.Empty;
+            bool isReserved = reservedBookTitles.Contains(title);
+            bool isBorrowed = borrowedBookTitles.Contains(title);
+
+            if (isReserved)
+            {
+                return "Reserved";
+            }
+
+            if (book.Copies > 0)
+            {
+                return "Available";
+            }
+
+            if (isBorrowed)
+            {
+                return "Borrowed";
+            }
+
+            return "Out of Stock";
         }
 
         private void UpdateBorrowLimitInfo(string studentNameToCheck)
@@ -282,14 +323,6 @@ namespace StudentLibrary.view
             // Column 5 is Actions
             if (e.ColumnIndex == 5)
             {
-                // Check if this is a pending request - don't show menu
-                string actions = row.Cells[5].Value?.ToString() ?? "";
-                if (actions == "Disabled")
-                {
-                    MessageBox.Show("This book request is pending approval from the librarian.", "Pending Request", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                
                 // Get book status to enable/disable Request Book option
                 string status = row.Cells[4].Value?.ToString() ?? "";
                 bool canRequest = status == "Available";
@@ -306,9 +339,13 @@ namespace StudentLibrary.view
                 // Update menu item text to show why it's disabled
                 if (!canRequest)
                 {
-                    if (status == "Pending")
+                    if (status == "Reserved")
                     {
-                        menuItemRequestBook.Text = "Request Book (Already Pending)";
+                        menuItemRequestBook.Text = "Request Book (Reserved)";
+                    }
+                    else if (status == "Borrowed")
+                    {
+                        menuItemRequestBook.Text = "Request Book (Borrowed)";
                     }
                     else if (status == "Out of Stock")
                     {
@@ -384,24 +421,19 @@ namespace StudentLibrary.view
                     e.CellStyle.ForeColor = Color.FromArgb(0, 128, 0); // Green
                     e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
                 }
-                else if (status == "Pending")
+                else if (status == "Reserved")
                 {
                     e.CellStyle.ForeColor = Color.FromArgb(255, 140, 0); // Orange
+                    e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
+                }
+                else if (status == "Borrowed")
+                {
+                    e.CellStyle.ForeColor = Color.FromArgb(33, 150, 243); // Blue
                     e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
                 }
                 else if (status == "Out of Stock")
                 {
                     e.CellStyle.ForeColor = Color.FromArgb(220, 20, 60); // Red
-                    e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
-                }
-            }
-            else if (e.ColumnIndex == 5 && e.RowIndex >= 0) // Actions column
-            {
-                string actions = e.Value?.ToString() ?? "";
-                
-                if (actions == "Disabled")
-                {
-                    e.CellStyle.ForeColor = Color.FromArgb(128, 128, 128); // Gray
                     e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Bold);
                 }
             }

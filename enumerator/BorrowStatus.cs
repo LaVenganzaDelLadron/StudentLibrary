@@ -13,6 +13,7 @@ namespace StudentLibrary.enumerator
         Returning = 2,
         Returned = 3,
         Overdue = 4,
-        Lost = 5
+        Lost = 5,
+        Reserved = 6
     }
 }
